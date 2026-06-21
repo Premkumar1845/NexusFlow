@@ -18,8 +18,6 @@ No tab-hopping. No external redirects. Every model call stays server-side and on
 
 <br/>
 
-**Built with care by Team MetaMinds**
-
 </div>
 
 ---
@@ -328,10 +326,6 @@ Each category opens an embedded workspace with a model picker, prompt composer a
 <div align="center">
 
 **Team MetaMinds**
-
-*NexusFlow — AI tools under one roof.*
-
-Built with Next.js · React 19 · TypeScript · Tailwind CSS v4 · Supabase · OpenRouter · Pollinations AI
 
 </div>
 
