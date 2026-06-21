@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="public/nexusflow-mark.svg" alt="NexusFlow logo" width="96" height="96" />
-
 # NexusFlow
 
 ### AI tools under one roof
@@ -23,29 +21,6 @@ No tab-hopping. No external redirects. Every model call stays server-side and on
 **Built with care by Team MetaMinds**
 
 </div>
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Tech Stack](#tech-stack)
-- [System Architecture](#system-architecture)
-- [Request Lifecycle (Sequence Diagram)](#request-lifecycle-sequence-diagram)
-- [Domain Model (Class Diagram)](#domain-model-class-diagram)
-- [Database Schema (ER Diagram)](#database-schema-er-diagram)
-- [Search → Category Routing (Flowchart)](#search--category-routing-flowchart)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Database Setup](#database-setup)
-- [API Reference](#api-reference)
-- [Tool Categories](#tool-categories)
-- [Design System](#design-system)
-- [Security](#security)
-- [Roadmap](#roadmap)
-- [Team](#team)
 
 ---
 
