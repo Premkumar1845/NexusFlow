@@ -6,7 +6,6 @@ import { Sparkles, X } from "lucide-react";
 import { NexusLogo } from "@/components/brand/Logo";
 import { MetaMindsLogo } from "@/components/brand/MetaMindsLogo";
 import SearchBar from "@/components/hero/SearchBar";
-import ScaledDashboard from "@/components/hero/ScaledDashboard";
 import Hero3DBackground from "@/components/hero/Hero3DBackground";
 
 export default function HomePage() {
@@ -81,10 +80,8 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <ScaledDashboard />
-
                 {/* bottom spacer */}
-                <div className="min-h-8 flex-1 shrink-0 sm:min-h-12 lg:min-h-16" />
+                <div className="min-h-6 flex-1 shrink-0 sm:min-h-12 lg:min-h-16" />
             </section>
 
             {/* Footer */}
