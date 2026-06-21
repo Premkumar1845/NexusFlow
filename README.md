@@ -115,6 +115,7 @@ flowchart TB
     classDef edge fill:#111827,stroke:#6C47FF,color:#fff;
     class OR,POLL,SUPA ext;
     class MW,ChatAPI,ImageAPI,Router,Lib edge;
+```
 
 ---
 
