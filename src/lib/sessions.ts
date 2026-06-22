@@ -17,6 +17,33 @@ export type NexusSession = {
 };
 
 const LS_KEY = "nexusflow.sessions";
+const ARCHIVE_KEY = "nexusflow.archived";
+
+/* ── Archive overlay ────────────────────────────────────────────────
+   Archive state is tracked client-side too, so the feature works even when
+   the Supabase `sessions.archived` column hasn't been added yet. */
+function readArchivedIds(): Set<string> {
+    if (typeof window === "undefined") return new Set();
+    try {
+        return new Set<string>(
+            JSON.parse(localStorage.getItem(ARCHIVE_KEY) ?? "[]")
+        );
+    } catch {
+        return new Set();
+    }
+}
+
+function writeArchivedIds(ids: Set<string>) {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(ARCHIVE_KEY, JSON.stringify([...ids]));
+}
+
+function setArchivedId(id: string, archived: boolean) {
+    const ids = readArchivedIds();
+    if (archived) ids.add(id);
+    else ids.delete(id);
+    writeArchivedIds(ids);
+}
 
 /* ── localStorage fallback (demo mode, no Supabase) ─────────────────── */
 function readLocal(): NexusSession[] {
@@ -25,8 +52,12 @@ function readLocal(): NexusSession[] {
         const items: NexusSession[] = JSON.parse(
             localStorage.getItem(LS_KEY) ?? "[]"
         );
+        const archivedIds = readArchivedIds();
         // Backfill `archived` for records saved before the field existed.
-        return items.map((s) => ({ ...s, archived: s.archived ?? false }));
+        return items.map((s) => ({
+            ...s,
+            archived: Boolean(s.archived) || archivedIds.has(s.id),
+        }));
     } catch {
         return [];
     }
@@ -51,7 +82,11 @@ export async function listSessions(): Promise<NexusSession[]> {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
-    return (data as NexusSession[]) ?? [];
+    const archivedIds = readArchivedIds();
+    return ((data as NexusSession[]) ?? []).map((s) => ({
+        ...s,
+        archived: Boolean(s.archived) || archivedIds.has(s.id),
+    }));
 }
 
 export async function saveSession(
@@ -119,6 +154,9 @@ export async function saveSession(
 export async function deleteSession(id: string): Promise<void> {
     const supabase = createClient();
 
+    // Drop it from the archive overlay regardless of backend.
+    setArchivedId(id, false);
+
     if (!supabase) {
         writeLocal(readLocal().filter((s) => s.id !== id));
         return;
@@ -139,6 +177,10 @@ export async function setArchived(
     id: string,
     archived: boolean
 ): Promise<void> {
+    // The overlay is the source of truth on the client, so archiving works even
+    // if the Supabase `archived` column is absent.
+    setArchivedId(id, archived);
+
     const supabase = createClient();
 
     if (!supabase) {
@@ -162,9 +204,6 @@ export async function setArchived(
         return;
     }
 
-    const { error } = await supabase
-        .from("sessions")
-        .update({ archived })
-        .eq("id", id);
-    if (error) throw error;
+    // Best-effort DB sync — ignore failures (e.g. column not yet migrated).
+    await supabase.from("sessions").update({ archived }).eq("id", id);
 }
