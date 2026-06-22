@@ -12,6 +12,7 @@ export type NexusSession = {
     prompt: string;
     output: string;
     status: SessionStatus;
+    archived: boolean;
     created_at: string;
 };
 
@@ -21,7 +22,11 @@ const LS_KEY = "nexusflow.sessions";
 function readLocal(): NexusSession[] {
     if (typeof window === "undefined") return [];
     try {
-        return JSON.parse(localStorage.getItem(LS_KEY) ?? "[]");
+        const items: NexusSession[] = JSON.parse(
+            localStorage.getItem(LS_KEY) ?? "[]"
+        );
+        // Backfill `archived` for records saved before the field existed.
+        return items.map((s) => ({ ...s, archived: s.archived ?? false }));
     } catch {
         return [];
     }
@@ -50,7 +55,7 @@ export async function listSessions(): Promise<NexusSession[]> {
 }
 
 export async function saveSession(
-    input: Omit<NexusSession, "id" | "created_at"> & { id?: string }
+    input: Omit<NexusSession, "id" | "created_at" | "archived"> & { id?: string }
 ): Promise<NexusSession> {
     const now = new Date().toISOString();
     const supabase = createClient();
@@ -67,6 +72,7 @@ export async function saveSession(
             prompt: input.prompt,
             output: input.output,
             status: input.status,
+            archived: existingIdx >= 0 ? items[existingIdx].archived : false,
         };
         if (existingIdx >= 0) items[existingIdx] = record;
         else items.unshift(record);
@@ -81,6 +87,7 @@ export async function saveSession(
         const record: NexusSession = {
             id: input.id ?? crypto.randomUUID(),
             created_at: now,
+            archived: false,
             ...input,
         } as NexusSession;
         items.unshift(record);
@@ -106,4 +113,58 @@ export async function saveSession(
 
     if (error) throw error;
     return data as NexusSession;
+}
+
+/** Permanently remove a session. */
+export async function deleteSession(id: string): Promise<void> {
+    const supabase = createClient();
+
+    if (!supabase) {
+        writeLocal(readLocal().filter((s) => s.id !== id));
+        return;
+    }
+
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) {
+        writeLocal(readLocal().filter((s) => s.id !== id));
+        return;
+    }
+
+    const { error } = await supabase.from("sessions").delete().eq("id", id);
+    if (error) throw error;
+}
+
+/** Archive or unarchive a session. */
+export async function setArchived(
+    id: string,
+    archived: boolean
+): Promise<void> {
+    const supabase = createClient();
+
+    if (!supabase) {
+        const items = readLocal();
+        const idx = items.findIndex((s) => s.id === id);
+        if (idx >= 0) {
+            items[idx] = { ...items[idx], archived };
+            writeLocal(items);
+        }
+        return;
+    }
+
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) {
+        const items = readLocal();
+        const idx = items.findIndex((s) => s.id === id);
+        if (idx >= 0) {
+            items[idx] = { ...items[idx], archived };
+            writeLocal(items);
+        }
+        return;
+    }
+
+    const { error } = await supabase
+        .from("sessions")
+        .update({ archived })
+        .eq("id", id);
+    if (error) throw error;
 }
