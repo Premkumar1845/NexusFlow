@@ -104,3 +104,67 @@ body {
     background-size: 200% 100%;
     animation: shimmer 1.4s ease-in-out infinite;
 }
+
+/* ── Light mode ──────────────────────────────────────────────────────
+   Toggled by adding the `light` class to <html> (see ThemeToggle).
+   Overrides the dashboard's hardcoded dark surfaces/text. */
+html.light {
+    color-scheme: light;
+}
+
+html.light body {
+    background: #eef0f4;
+    color: #1f2430;
+}
+
+/* Core surfaces */
+html.light .bg-\[\#1a1a1c\] {
+    background-color: #eef0f4 !important;
+}
+
+html.light .bg-\[\#1e1e21\] {
+    background-color: #ffffff !important;
+}
+
+html.light .bg-\[\#242427\] {
+    background-color: #ffffff !important;
+}
+
+/* Text: keep white text readable on the brand-blue buttons, darken elsewhere */
+html.light [class*="text-white"]:not([class*="bg-[#1A56DB]"]) {
+    color: #1f2430 !important;
+}
+
+html.light [class*="placeholder-white"]::placeholder {
+    color: rgba(31, 36, 48, 0.4) !important;
+}
+
+/* Translucent white fills → subtle neutral tint */
+html.light [class*="bg-white/"],
+html.light [class*="bg-white\/"] {
+    background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Borders & rings */
+html.light [class*="border-white/"] {
+    border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html.light [class*="ring-white/"] {
+    --tw-ring-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Keep brand-blue buttons white-texted in light mode */
+html.light .bg-\[\#1A56DB\],
+html.light .bg-\[\#1A56DB\] * {
+    color: #ffffff !important;
+}
+
+/* Light-mode scrollbars */
+html.light .nf-scroll::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.18);
+}
+
+html.light .nf-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.3);
+}
