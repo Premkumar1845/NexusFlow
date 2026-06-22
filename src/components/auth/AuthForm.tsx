@@ -78,11 +78,14 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     return (
         <main className="min-h-screen grid place-items-center bg-gradient-to-b from-white via-gray-50 to-gray-100 px-4">
             <div className="w-full max-w-sm">
-                {/* Logo — top center */}
-                <div className="flex justify-center mb-8">
-                    <Link href="/">
-                        <NexusLogo size={44} />
+                {/* Logo — top center, wordmark stacked below */}
+                <div className="flex flex-col items-center gap-3 mb-8">
+                    <Link href="/" className="inline-flex">
+                        <NexusLogo size={56} withWordmark={false} />
                     </Link>
+                    <span className="text-2xl font-semibold tracking-tight text-gray-900">
+                        Nexus<span className="text-brand">Flow</span>
+                    </span>
                 </div>
 
                 <div className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6 sm:p-7">
