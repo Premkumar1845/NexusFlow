@@ -121,8 +121,8 @@ export default function ScaledDashboard() {
                     {/* Content */}
                     <section className="flex-1 px-5 py-4">
                         <div className="flex items-center gap-3 mb-4">
-                            <span className="grid place-items-center w-9 h-9 rounded-lg bg-[#1A56DB]">
-                                <NexusMark className="w-5 h-5 text-white" />
+                            <span className="grid place-items-center w-9 h-9">
+                                <NexusMark className="w-8 h-8" />
                             </span>
                             <div>
                                 <div className="text-sm font-medium text-white">NexusFlow</div>

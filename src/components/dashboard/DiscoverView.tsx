@@ -26,14 +26,8 @@ export default function DiscoverView({
         <div className="mx-auto max-w-4xl">
             {/* Center logo + tagline */}
             <div className="flex flex-col items-center text-center pt-2 pb-6">
-                <span
-                    className="grid place-items-center w-14 h-14 rounded-2xl mb-4 shadow-lg"
-                    style={{
-                        background:
-                            "linear-gradient(135deg, #1a56db 0%, #2f6df0 55%, #1748b8 100%)",
-                    }}
-                >
-                    <NexusMark className="w-8 h-8 text-white" />
+                <span className="grid place-items-center w-14 h-14 mb-4">
+                    <NexusMark className="w-14 h-14" />
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-semibold text-white">
                     Access next-gen AI tools under 1 platform
