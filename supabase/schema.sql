@@ -47,9 +47,13 @@ create table if not exists public.sessions (
   prompt text,
   output text,
   status session_status not null default 'draft',
+  archived boolean not null default false,
   created_at timestamptz not null default now()
 );
 create index if not exists sessions_user_idx on public.sessions (user_id, created_at desc);
+-- Backfill for projects created before the archive feature existed.
+alter table public.sessions
+  add column if not exists archived boolean not null default false;
 
 -- ── chat_history ─────────────────────────────────────────────────────
 create table if not exists public.chat_history (
