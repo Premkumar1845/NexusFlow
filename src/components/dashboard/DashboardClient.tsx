@@ -13,12 +13,15 @@ import { NexusMark } from "@/components/brand/Logo";
 import { CATEGORY_MAP, type CategoryId } from "@/lib/categories";
 import {
     listSessions,
+    deleteSession,
+    setArchived,
     type NexusSession,
 } from "@/lib/sessions";
 import { createClient } from "@/lib/supabase/client";
 import Sidebar from "./Sidebar";
 import DiscoverView from "./DiscoverView";
 import ToolWorkspace from "@/components/tools/ToolWorkspace";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 type View = "discover" | "categories" | "history";
 
@@ -88,6 +91,31 @@ export default function DashboardClient({
         router.push("/");
     }
 
+    async function removeSession(s: NexusSession) {
+        setSessions((prev) => prev.filter((x) => x.id !== s.id));
+        if (resume?.id === s.id) {
+            setResume(null);
+            setActiveCategory(null);
+        }
+        try {
+            await deleteSession(s.id);
+        } catch {
+            // best-effort; reload to resync on failure
+            listSessions().then(setSessions);
+        }
+    }
+
+    async function archiveSession(s: NexusSession, archived: boolean) {
+        setSessions((prev) =>
+            prev.map((x) => (x.id === s.id ? { ...x, archived } : x))
+        );
+        try {
+            await setArchived(s.id, archived);
+        } catch {
+            listSessions().then(setSessions);
+        }
+    }
+
     const category = activeCategory ? CATEGORY_MAP[activeCategory] : null;
 
     return (
@@ -104,6 +132,8 @@ export default function DashboardClient({
                     }}
                     onSelect={selectSession}
                     onNew={newSession}
+                    onDelete={removeSession}
+                    onArchive={archiveSession}
                 />
             </div>
 
@@ -127,6 +157,8 @@ export default function DashboardClient({
                             onSelect={selectSession}
                             onNew={newSession}
                             onClose={() => setSidebarOpen(false)}
+                            onDelete={removeSession}
+                            onArchive={archiveSession}
                         />
                     </div>
                 </div>
@@ -154,8 +186,8 @@ export default function DashboardClient({
                     )}
 
                     <div className="flex items-center gap-2.5">
-                        <span className="grid place-items-center w-9 h-9 rounded-lg bg-[#1A56DB]">
-                            <NexusMark className="w-5 h-5 text-white" />
+                        <span className="grid place-items-center w-9 h-9">
+                            <NexusMark className="w-8 h-8" />
                         </span>
                         <div className="leading-tight">
                             <div className="text-sm font-medium text-white">NexusFlow</div>
@@ -172,6 +204,9 @@ export default function DashboardClient({
                         <Sparkles className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Launch Tool</span>
                     </button>
+
+                    {/* Theme toggle */}
+                    <ThemeToggle />
 
                     {/* Profile */}
                     <div className="relative">
