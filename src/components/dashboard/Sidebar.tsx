@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
     Compass,
     Layers,
@@ -11,14 +10,12 @@ import {
     Trash2,
     Archive,
     ArchiveRestore,
-    ChevronDown,
-    ChevronRight,
 } from "lucide-react";
 import { NexusMark } from "@/components/brand/Logo";
 import { CATEGORY_MAP } from "@/lib/categories";
 import type { NexusSession } from "@/lib/sessions";
 
-type View = "discover" | "categories" | "history";
+type View = "discover" | "categories" | "history" | "archived";
 
 const STATUS_DOT: Record<NexusSession["status"], string> = {
     done: "#28c840",
@@ -47,7 +44,6 @@ export default function Sidebar({
     onDelete?: (s: NexusSession) => void;
     onArchive?: (s: NexusSession, archived: boolean) => void;
 }) {
-    const [showArchived, setShowArchived] = useState(false);
     const recent = sessions.filter((s) => !s.archived);
     const archived = sessions.filter((s) => s.archived);
 
@@ -132,36 +128,23 @@ export default function Sidebar({
                             onArchive={onArchive}
                         />
                     ))}
-
-                    {/* Archived chats */}
-                    {archived.length > 0 && (
-                        <div className="pt-3">
-                            <button
-                                onClick={() => setShowArchived((o) => !o)}
-                                className="flex items-center gap-1.5 w-full px-2 py-1 text-[10px] uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors"
-                            >
-                                {showArchived ? (
-                                    <ChevronDown className="w-3 h-3" />
-                                ) : (
-                                    <ChevronRight className="w-3 h-3" />
-                                )}
-                                Archived ({archived.length})
-                            </button>
-                            {showArchived &&
-                                archived.map((s) => (
-                                    <SessionRow
-                                        key={s.id}
-                                        session={s}
-                                        active={activeId === s.id}
-                                        onSelect={onSelect}
-                                        onDelete={onDelete}
-                                        onArchive={onArchive}
-                                    />
-                                ))}
-                        </div>
-                    )}
                 </div>
             </div>
+
+            {/* Archived — opens the archive interface */}
+            <button
+                onClick={() => onView("archived")}
+                className={`mt-2 flex items-center gap-2 w-full rounded-lg px-3 py-2 transition-colors ${view === "archived"
+                    ? "bg-white/10 text-white"
+                    : "text-white/70 hover:bg-white/5"
+                    }`}
+            >
+                <Archive className="w-3.5 h-3.5" />
+                <span className="text-[12px]">Archived</span>
+                <span className="ml-auto text-[10px] text-white/40 bg-white/5 rounded-full px-1.5 py-0.5">
+                    {archived.length}
+                </span>
+            </button>
         </aside>
     );
 }

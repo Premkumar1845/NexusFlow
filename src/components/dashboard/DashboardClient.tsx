@@ -8,6 +8,9 @@ import {
     ChevronLeft,
     LogOut,
     User as UserIcon,
+    Archive,
+    ArchiveRestore,
+    Trash2,
 } from "lucide-react";
 import { NexusMark } from "@/components/brand/Logo";
 import { CATEGORY_MAP, type CategoryId } from "@/lib/categories";
@@ -23,7 +26,7 @@ import DiscoverView from "./DiscoverView";
 import ToolWorkspace from "@/components/tools/ToolWorkspace";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
-type View = "discover" | "categories" | "history";
+type View = "discover" | "categories" | "history" | "archived";
 
 export default function DashboardClient({
     initialCategory,
@@ -256,6 +259,13 @@ export default function DashboardClient({
                         </div>
                     ) : view === "history" ? (
                         <HistoryView sessions={sessions} onSelect={selectSession} />
+                    ) : view === "archived" ? (
+                        <ArchivedView
+                            sessions={sessions}
+                            onSelect={selectSession}
+                            onRestore={(s) => archiveSession(s, false)}
+                            onDelete={removeSession}
+                        />
                     ) : (
                         <DiscoverView initialQuery={query} onPick={pick} />
                     )}
@@ -312,6 +322,88 @@ function HistoryView({
                                     style={{ background: dot[s.status] }}
                                 />
                             </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ArchivedView({
+    sessions,
+    onSelect,
+    onRestore,
+    onDelete,
+}: {
+    sessions: NexusSession[];
+    onSelect: (s: NexusSession) => void;
+    onRestore: (s: NexusSession) => void;
+    onDelete: (s: NexusSession) => void;
+}) {
+    const archived = sessions.filter((s) => s.archived);
+    return (
+        <div className="mx-auto max-w-3xl">
+            <div className="flex items-center gap-2 mb-1">
+                <Archive className="w-5 h-5 text-white/70" />
+                <h2 className="text-lg font-semibold text-white">Archived sessions</h2>
+            </div>
+            <p className="text-sm text-white/45 mb-5">
+                Restore an archived session back to Recent, or delete it permanently.
+            </p>
+            {archived.length === 0 ? (
+                <div className="rounded-xl bg-white/[0.03] ring-1 ring-white/5 px-6 py-10 text-center">
+                    <Archive className="w-8 h-8 text-white/20 mx-auto mb-3" />
+                    <p className="text-sm text-white/40">No archived sessions yet.</p>
+                    <p className="text-xs text-white/30 mt-1">
+                        Use the archive icon on a recent session to move it here.
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-2">
+                    {archived.map((s) => {
+                        const cat = CATEGORY_MAP[s.tool_category];
+                        const Icon = cat?.icon ?? Sparkles;
+                        return (
+                            <div
+                                key={s.id}
+                                className="group flex items-center gap-3 w-full rounded-xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-[#1A56DB]/40 px-4 py-3 transition-all"
+                            >
+                                <button
+                                    onClick={() => onSelect(s)}
+                                    className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                                >
+                                    <span className="grid place-items-center w-9 h-9 rounded-lg bg-[#1A56DB]/15 ring-1 ring-[#1A56DB]/30 shrink-0">
+                                        <Icon className="w-4 h-4 text-[#5b8def]" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-sm text-white truncate">
+                                            {s.prompt || cat?.name}
+                                        </div>
+                                        <div className="text-[11px] text-white/40">
+                                            {cat?.name} · {new Date(s.created_at).toLocaleString()}
+                                        </div>
+                                    </div>
+                                </button>
+                                <div className="flex items-center gap-1 shrink-0">
+                                    <button
+                                        onClick={() => onRestore(s)}
+                                        className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg px-2.5 py-1.5 transition-colors"
+                                        title="Restore to Recent"
+                                    >
+                                        <ArchiveRestore className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">Restore</span>
+                                    </button>
+                                    <button
+                                        onClick={() => onDelete(s)}
+                                        className="grid place-items-center text-white/50 hover:text-[#ff5f57] bg-white/5 hover:bg-white/10 rounded-lg w-8 h-8 transition-colors"
+                                        title="Delete permanently"
+                                        aria-label="Delete session"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
                         );
                     })}
                 </div>
