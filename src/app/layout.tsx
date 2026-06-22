@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     description:
         "Discover and use AI tools for image, video, code, docs, agents and app building — without ever leaving NexusFlow. Built by MetaMinds.",
     icons: {
-        icon: "/nexusflow-mark.svg",
+        icon: "/nexusflow-logo.png",
     },
     applicationName: "NexusFlow",
     keywords: ["AI", "tools", "image generation", "code", "agents", "NexusFlow", "MetaMinds"],
