@@ -1,6 +1,6 @@
 <div align="center">
     
-<img src="public/nexusflow-mark.svg" alt="NexusFlow logo" width="96" height="96" />
+<img src="public/nexusflow-logo.png" alt="NexusFlow logo" width="120" />
 
 # NexusFlow
 
