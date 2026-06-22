@@ -4,9 +4,9 @@
   "private": true,
   "description": "NexusFlow — AI tools under one roof. Built by MetaMinds.",
   "scripts": {
-    "dev": "next dev -p 3100",
+    "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start -p 3100",
+    "start": "next start -p 3000",
     "lint": "next lint"
   },
   "dependencies": {
