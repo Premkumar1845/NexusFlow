@@ -56,3 +56,27 @@ export async function generatePollinationsImage(
         return null;
     }
 }
+
+/* ── Video generation ──────────────────────────────────────────────── */
+
+const POLLINATIONS_VIDEO_BASE = "https://video.pollinations.ai/prompt";
+
+/**
+ * Generates a short video clip for `prompt` using Pollinations' free video
+ * API and returns the public MP4 URL, or null if the request fails.
+ */
+export async function generatePollinationsVideo(
+    prompt: string
+): Promise<string | null> {
+    const url = `${POLLINATIONS_VIDEO_BASE}/${encodeURIComponent(prompt)}`;
+    try {
+        // HEAD first to verify the URL resolves before handing it to the client.
+        const res = await fetch(url, { method: "HEAD" });
+        if (!res.ok) return null;
+        const ct = res.headers.get("content-type") ?? "";
+        if (!ct.startsWith("video/") && !ct.startsWith("application/octet")) return null;
+        return url;
+    } catch {
+        return null;
+    }
+}
