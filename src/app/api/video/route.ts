@@ -36,13 +36,11 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    const dataUrl = await generateHuggingFaceVideo(prompt);
-    if (dataUrl) {
+    try {
+        const dataUrl = await generateHuggingFaceVideo(prompt);
         return NextResponse.json({ video: dataUrl });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Video generation failed.";
+        return NextResponse.json({ error: message }, { status: 503 });
     }
-
-    return NextResponse.json(
-        { error: "Video generation failed. The model may be loading — please try again in 30 seconds." },
-        { status: 503 }
-    );
 }

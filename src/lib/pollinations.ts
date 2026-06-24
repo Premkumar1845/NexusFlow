@@ -68,37 +68,43 @@ export function hasHuggingFaceKey() {
 
 /**
  * Generates a short video clip for `prompt` using the free Hugging Face
- * Inference API and returns a base64 data URL, or null on failure.
+ * Inference API and returns a base64 data URL on success, or throws an
+ * Error with a human-readable message on failure.
  * Requires HUGGINGFACE_API_KEY in the environment.
  */
 export async function generateHuggingFaceVideo(
     prompt: string
-): Promise<string | null> {
+): Promise<string> {
     const key = process.env.HUGGINGFACE_API_KEY;
-    if (!key) return null;
+    if (!key) throw new Error("HUGGINGFACE_API_KEY is not set.");
 
-    try {
-        const res = await fetch(HF_VIDEO_MODEL, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${key}`,
-                "Content-Type": "application/json",
-                "x-wait-for-model": "true",
-            },
-            body: JSON.stringify({ inputs: prompt }),
-            signal: AbortSignal.timeout(120_000),
-        });
+    const res = await fetch(HF_VIDEO_MODEL, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json",
+            "x-wait-for-model": "true",
+        },
+        body: JSON.stringify({ inputs: prompt }),
+        signal: AbortSignal.timeout(120_000),
+    });
 
-        if (!res.ok) return null;
+    const ct = res.headers.get("content-type") ?? "";
 
-        const ct = res.headers.get("content-type") ?? "";
-        if (!ct.startsWith("video/") && !ct.startsWith("application/octet")) return null;
-
-        const buf = Buffer.from(await res.arrayBuffer());
-        if (buf.byteLength === 0) return null;
-
-        return `data:video/mp4;base64,${buf.toString("base64")}`;
-    } catch {
-        return null;
+    // HuggingFace returns JSON on errors (model loading, quota, etc.)
+    if (ct.includes("application/json") || !res.ok) {
+        let json: { error?: string; estimated_time?: number } = {};
+        try { json = await res.json(); } catch { /* ignore */ }
+        if (json.estimated_time) {
+            throw new Error(
+                `Model is warming up — estimated wait: ${Math.ceil(json.estimated_time)}s. Please try again shortly.`
+            );
+        }
+        throw new Error(json.error ?? `HuggingFace returned status ${res.status}.`);
     }
+
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.byteLength === 0) throw new Error("Received empty video response.");
+
+    return `data:video/mp4;base64,${buf.toString("base64")}`;
 }
