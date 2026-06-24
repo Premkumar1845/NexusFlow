@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateHuggingFaceVideo, hasHuggingFaceKey } from "@/lib/pollinations";
+import { generateReplicateVideo, hasReplicateKey } from "@/lib/pollinations";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
 /**
- * POST /api/video — video generation endpoint.
- *
- * Uses the free Hugging Face Inference API (damo-vilab/text-to-video-ms-1.7b)
- * to generate a short MP4 clip from a text prompt.
- * Requires HUGGINGFACE_API_KEY in .env.local (free token from huggingface.co).
+ * POST /api/video — video generation via Replicate (zeroscope-v2-xl).
+ * Requires REPLICATE_API_TOKEN in .env.local (free at replicate.com).
  */
 export async function POST(req: NextRequest) {
     let body: { prompt?: string };
@@ -24,20 +21,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "`prompt` is required." }, { status: 400 });
     }
 
-    if (!hasHuggingFaceKey()) {
+    if (!hasReplicateKey()) {
         return NextResponse.json(
             {
                 error:
-                    "Video generation requires a free Hugging Face API key. " +
-                    "Add HUGGINGFACE_API_KEY to your .env.local file. " +
-                    "Get a free token at https://huggingface.co/settings/tokens",
+                    "Video generation requires a free Replicate API token. " +
+                    "Add REPLICATE_API_TOKEN=r8_xxx to your .env.local. " +
+                    "Get a free token at https://replicate.com/account/api-tokens",
             },
             { status: 503 }
         );
     }
 
     try {
-        const dataUrl = await generateHuggingFaceVideo(prompt);
+        const dataUrl = await generateReplicateVideo(prompt);
         return NextResponse.json({ video: dataUrl });
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : "Video generation failed.";

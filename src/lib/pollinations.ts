@@ -57,54 +57,80 @@ export async function generatePollinationsImage(
     }
 }
 
-/* ── Video generation via Hugging Face Inference API ──────────────── */
+/* ── Video generation via Replicate API ───────────────────────────── */
 
-const HF_VIDEO_MODEL =
-    "https://api-inference.huggingface.co/models/damo-vilab/text-to-video-ms-1.7b";
+const REPLICATE_API = "https://api.replicate.com/v1";
 
-export function hasHuggingFaceKey() {
-    return Boolean(process.env.HUGGINGFACE_API_KEY);
+export function hasReplicateKey() {
+    return Boolean(process.env.REPLICATE_API_TOKEN);
 }
 
 /**
- * Generates a short video clip for `prompt` using the free Hugging Face
- * Inference API and returns a base64 data URL on success, or throws an
- * Error with a human-readable message on failure.
- * Requires HUGGINGFACE_API_KEY in the environment.
+ * Generates a short video clip via Replicate (anotherjesse/zeroscope-v2-xl).
+ * Polls until the prediction succeeds, then fetches the MP4 bytes and
+ * returns them as a base64 data URL.
+ * Requires REPLICATE_API_TOKEN in the environment (free at replicate.com).
  */
-export async function generateHuggingFaceVideo(
-    prompt: string
-): Promise<string> {
-    const key = process.env.HUGGINGFACE_API_KEY;
-    if (!key) throw new Error("HUGGINGFACE_API_KEY is not set.");
+export async function generateReplicateVideo(prompt: string): Promise<string> {
+    const token = process.env.REPLICATE_API_TOKEN;
+    if (!token) throw new Error("REPLICATE_API_TOKEN is not set.");
 
-    const res = await fetch(HF_VIDEO_MODEL, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${key}`,
-            "Content-Type": "application/json",
-            "x-wait-for-model": "true",
-        },
-        body: JSON.stringify({ inputs: prompt }),
-        signal: AbortSignal.timeout(120_000),
-    });
-
-    const ct = res.headers.get("content-type") ?? "";
-
-    // HuggingFace returns JSON on errors (model loading, quota, etc.)
-    if (ct.includes("application/json") || !res.ok) {
-        let json: { error?: string; estimated_time?: number } = {};
-        try { json = await res.json(); } catch { /* ignore */ }
-        if (json.estimated_time) {
-            throw new Error(
-                `Model is warming up — estimated wait: ${Math.ceil(json.estimated_time)}s. Please try again shortly.`
-            );
+    // 1. Create prediction
+    const createRes = await fetch(
+        `${REPLICATE_API}/models/anotherjesse/zeroscope-v2-xl/predictions`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                input: { prompt, num_frames: 24, fps: 8, width: 576, height: 320 },
+            }),
         }
-        throw new Error(json.error ?? `HuggingFace returned status ${res.status}.`);
+    );
+
+    if (!createRes.ok) {
+        const err = await createRes.json().catch(() => ({})) as { detail?: string };
+        throw new Error(err.detail ?? `Replicate error ${createRes.status}`);
     }
 
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.byteLength === 0) throw new Error("Received empty video response.");
+    const prediction = await createRes.json() as { id: string; status: string; error?: string };
 
-    return `data:video/mp4;base64,${buf.toString("base64")}`;
+    // 2. Poll until done (up to 110 s)
+    const deadline = Date.now() + 110_000;
+    let pollUrl = `${REPLICATE_API}/predictions/${prediction.id}`;
+
+    while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 3000));
+
+        const pollRes = await fetch(pollUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!pollRes.ok) throw new Error(`Poll error ${pollRes.status}`);
+
+        const state = await pollRes.json() as {
+            status: string;
+            output?: string[];
+            error?: string;
+        };
+
+        if (state.status === "failed" || state.error) {
+            throw new Error(state.error ?? "Replicate prediction failed.");
+        }
+
+        if (state.status === "succeeded" && state.output?.length) {
+            const videoUrl = state.output[0];
+
+            // 3. Fetch video bytes and return as base64 data URL
+            const vidRes = await fetch(videoUrl);
+            if (!vidRes.ok) throw new Error("Failed to download generated video.");
+
+            const buf = Buffer.from(await vidRes.arrayBuffer());
+            return `data:video/mp4;base64,${buf.toString("base64")}`;
+        }
+    }
+
+    throw new Error("Video generation timed out. Please try again.");
 }
