@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateReplicateVideo, hasReplicateKey } from "@/lib/pollinations";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 /**
  * POST /api/video — video generation via Replicate (zeroscope-v2-xl).

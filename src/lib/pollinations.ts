@@ -66,9 +66,9 @@ export function hasReplicateKey() {
 }
 
 /**
- * Generates a short video clip via Replicate (anotherjesse/zeroscope-v2-xl).
- * Polls until the prediction succeeds, then fetches the MP4 bytes and
- * returns them as a base64 data URL.
+ * Generates a short video clip via Replicate (minimax/video-01).
+ * Creates a prediction, polls until it succeeds, then returns the CDN
+ * video URL so the browser <video> element can stream it directly.
  * Requires REPLICATE_API_TOKEN in the environment (free at replicate.com).
  */
 export async function generateReplicateVideo(prompt: string): Promise<string> {
@@ -77,7 +77,7 @@ export async function generateReplicateVideo(prompt: string): Promise<string> {
 
     // 1. Create prediction
     const createRes = await fetch(
-        `${REPLICATE_API}/models/anotherjesse/zeroscope-v2-xl/predictions`,
+        `${REPLICATE_API}/models/minimax/video-01/predictions`,
         {
             method: "POST",
             headers: {
@@ -85,7 +85,7 @@ export async function generateReplicateVideo(prompt: string): Promise<string> {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                input: { prompt, num_frames: 24, fps: 8, width: 576, height: 320 },
+                input: { prompt, prompt_optimizer: true },
             }),
         }
     );
@@ -97,12 +97,12 @@ export async function generateReplicateVideo(prompt: string): Promise<string> {
 
     const prediction = await createRes.json() as { id: string; status: string; error?: string };
 
-    // 2. Poll until done (up to 110 s)
-    const deadline = Date.now() + 110_000;
-    let pollUrl = `${REPLICATE_API}/predictions/${prediction.id}`;
+    // 2. Poll until done (up to 270 s — minimax takes ~150 s on average)
+    const deadline = Date.now() + 270_000;
+    const pollUrl = `${REPLICATE_API}/predictions/${prediction.id}`;
 
     while (Date.now() < deadline) {
-        await new Promise((r) => setTimeout(r, 3000));
+        await new Promise((r) => setTimeout(r, 5000));
 
         const pollRes = await fetch(pollUrl, {
             headers: { Authorization: `Bearer ${token}` },
@@ -112,7 +112,7 @@ export async function generateReplicateVideo(prompt: string): Promise<string> {
 
         const state = await pollRes.json() as {
             status: string;
-            output?: string[];
+            output?: string;
             error?: string;
         };
 
@@ -120,15 +120,9 @@ export async function generateReplicateVideo(prompt: string): Promise<string> {
             throw new Error(state.error ?? "Replicate prediction failed.");
         }
 
-        if (state.status === "succeeded" && state.output?.length) {
-            const videoUrl = state.output[0];
-
-            // 3. Fetch video bytes and return as base64 data URL
-            const vidRes = await fetch(videoUrl);
-            if (!vidRes.ok) throw new Error("Failed to download generated video.");
-
-            const buf = Buffer.from(await vidRes.arrayBuffer());
-            return `data:video/mp4;base64,${buf.toString("base64")}`;
+        if (state.status === "succeeded" && state.output) {
+            // Return the CDN URL directly — the browser <video> loads it.
+            return state.output;
         }
     }
 
