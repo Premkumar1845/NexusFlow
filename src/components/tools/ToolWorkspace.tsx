@@ -108,15 +108,18 @@ export default function ToolWorkspace({
         setMedia(null);
         await persist("", "running");
         try {
-            const res = await fetch("/api/image", {
+            const isVideo = category.interface === "video";
+            const endpoint = isVideo ? "/api/video" : "/api/image";
+            const res = await fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt, model }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error ?? "Generation failed.");
-            setMedia(data.image);
-            await persist(data.image, "done");
+            const result = isVideo ? data.video : data.image;
+            setMedia(result);
+            await persist(result, "done");
         } catch (err) {
             setMediaError(err instanceof Error ? err.message : "Generation failed.");
         } finally {
