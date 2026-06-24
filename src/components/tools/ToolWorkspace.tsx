@@ -236,24 +236,28 @@ function MediaOutput({
     return (
         <Shell>
             <div className="relative mx-auto w-full max-w-md">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src={media}
-                    alt="Generated output"
-                    className="w-full rounded-lg ring-1 ring-white/10"
-                />
-                {kind === "video" && (
-                    <span className="absolute inset-0 grid place-items-center">
-                        <span className="grid place-items-center w-12 h-12 rounded-full bg-black/50 backdrop-blur ring-1 ring-white/20">
-                            <Play className="w-5 h-5 text-white" />
-                        </span>
-                    </span>
+                {kind === "video" ? (
+                    <video
+                        src={media}
+                        controls
+                        autoPlay
+                        loop
+                        playsInline
+                        className="w-full rounded-lg ring-1 ring-white/10"
+                    />
+                ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                        src={media}
+                        alt="Generated output"
+                        className="w-full rounded-lg ring-1 ring-white/10"
+                    />
                 )}
             </div>
             <div className="mt-3 flex justify-center">
                 <a
                     href={media}
-                    download={`nexusflow-${kind}.${mediaExt(media)}`}
+                    download={`nexusflow-${kind}.${mediaExt(media, kind)}`}
                     className="flex items-center gap-1.5 text-xs text-white/70 bg-white/5 hover:bg-white/10 rounded-lg px-3 py-1.5"
                 >
                     <Download className="w-3.5 h-3.5" /> Download
@@ -264,7 +268,8 @@ function MediaOutput({
 }
 
 /** Infers a file extension from a data/HTTP image URL. */
-function mediaExt(url: string): string {
+function mediaExt(url: string, kind?: "image" | "video"): string {
+    if (kind === "video") return "mp4";
     const m = /^data:image\/([a-z0-9.+-]+)/i.exec(url);
     if (m) {
         const t = m[1].toLowerCase();
