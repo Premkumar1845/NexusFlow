@@ -17,6 +17,7 @@ No tab-hopping. No external redirects. Every model call stays server-side and on
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![OpenRouter](https://img.shields.io/badge/OpenRouter-LLMs-6C47FF?style=for-the-badge)](https://openrouter.ai/)
+[![Replicate](https://img.shields.io/badge/Replicate-Video%20AI-000000?style=for-the-badge&logo=replicate&logoColor=white)](https://replicate.com/)
 
 <br/>
 
@@ -44,6 +45,7 @@ The platform is **demo-friendly by design**: it runs fully without any keys (loc
 |---|---------|-------------|
 | 🎯 | **Unified Search Router** | A keyword-scoring router maps free-text queries to the best-matching of 6 categories — from both the hero search bar and the dashboard. |
 | 🖼️ | **Real Image Generation** | Server-side **Pollinations AI** generation (with OpenRouter image fallback). Token stays server-only; images returned as inline data URLs. |
+| 🎬 | **Real Video Generation** | Server-side **Replicate API** (minimax/video-01) generates genuine MP4 clips from text prompts. Result plays inline in a native `<video>` element — no fake play-button overlays. |
 | 💬 | **Streaming Text AI** | Server-Sent Events (SSE) proxy over **OpenRouter** streams tokens live for code, docs, agentic and builder tools. |
 | 🧩 | **6 Embedded Tool Workspaces** | Image, Video, Code, Notes/Docs, Agentic, App/Website Builder — each with a model picker, prompt composer and inline output. |
 | 🔐 | **Supabase Auth + RLS** | Email auth, profile auto-provisioning on signup, and Row-Level-Security so users only ever see their own data. |
@@ -62,9 +64,10 @@ The platform is **demo-friendly by design**: it runs fully without any keys (loc
 | **Framework** | Next.js 15.5 (App Router) | Server Components + Route Handlers |
 | **UI** | React 19 · TypeScript 5.7 (strict) | `@/*` path alias → `src/*` |
 | **Styling** | Tailwind CSS v4 | CSS-based `@theme` config, custom keyframes |
-| **API Layer** | Next.js Route Handlers | `/api/chat` (SSE), `/api/image` |
+| **API Layer** | Next.js Route Handlers | `/api/chat` (SSE), `/api/image`, `/api/video` |
 | **Text AI** | OpenRouter | One endpoint → many LLMs, streamed |
 | **Image AI** | Pollinations AI | Server-side generation → data URLs |
+| **Video AI** | Replicate (minimax/video-01) | Server-side polling → CDN URL → native `<video>` |
 | **Auth + DB** | Supabase (`@supabase/ssr`) | Email auth, PostgreSQL, RLS |
 | **Icons** | lucide-react | Consistent line-icon set |
 | **Runtime** | Node.js | `runtime = "nodejs"` on API routes |
@@ -89,6 +92,7 @@ flowchart TB
         MW["middleware.ts - Supabase session refresh"]
         ChatAPI["/api/chat - SSE proxy"]
         ImageAPI["/api/image - generation + fallback"]
+        VideoAPI["/api/video - Replicate polling + CDN URL"]
         Router["categories.ts - keyword router"]
         Lib["lib: openrouter / pollinations / sessions"]
     end
@@ -96,6 +100,7 @@ flowchart TB
     subgraph External["External Services"]
         OR["OpenRouter - LLMs"]
         POLL["Pollinations AI - images"]
+        REP["Replicate - video (minimax/video-01)"]
         SUPA["Supabase - Auth + PostgreSQL + RLS"]
     end
 
@@ -104,17 +109,19 @@ flowchart TB
     Router --> Dash --> Tools
     Tools -->|stream text| Hook --> ChatAPI
     Tools -->|generate image| ImageAPI
+    Tools -->|generate video| VideoAPI
     ChatAPI -->|Bearer key| OR
     ImageAPI -->|Bearer key| POLL
     ImageAPI -. fallback .-> OR
+    VideoAPI -->|Bearer token| REP
     MW --> SUPA
     Lib --> SUPA
     Dash <-->|sessions / history| SUPA
 
     classDef ext fill:#1e293b,stroke:#3FCF8E,color:#fff;
     classDef edge fill:#111827,stroke:#6C47FF,color:#fff;
-    class OR,POLL,SUPA ext;
-    class MW,ChatAPI,ImageAPI,Router,Lib edge;
+    class OR,POLL,REP,SUPA ext;
+    class MW,ChatAPI,ImageAPI,VideoAPI,Router,Lib edge;
 ```
 
 ---
@@ -158,7 +165,8 @@ NexusFlow by MetaMinds/
 │   │   ├── dashboard/page.tsx      # Auth-gated workspace (server component)
 │   │   └── api/
 │   │       ├── chat/route.ts       # OpenRouter SSE streaming proxy
-│   │       └── image/route.ts      # Pollinations → OpenRouter → placeholder
+│   │       ├── image/route.ts      # Pollinations → OpenRouter → placeholder
+│   │       └── video/route.ts      # Replicate prediction → poll → CDN URL
 │   ├── components/
 │   │   ├── brand/                  # NexusFlow + MetaMinds logos
 │   │   ├── hero/                   # Hero3DBackground, SearchBar, ScaledDashboard
@@ -168,7 +176,7 @@ NexusFlow by MetaMinds/
 │   ├── lib/
 │   │   ├── categories.ts           # 6 categories, models, keyword router
 │   │   ├── openrouter.ts           # Server-side OpenRouter client + image gen
-│   │   ├── pollinations.ts         # Server-side Pollinations image client
+│   │   ├── pollinations.ts         # Pollinations image client + Replicate video client
 │   │   ├── sessions.ts             # Persistence (Supabase / localStorage)
 │   │   ├── useChatStream.ts        # Client SSE streaming hook
 │   │   └── supabase/               # Browser + server clients
@@ -201,9 +209,7 @@ cp .env.example .env.local        # then fill in your keys (see below)
 npm run dev
 ```
 
-Open **http://localhost:3100**
-
-> The dev server runs on port **3100** (`next dev -p 3100`) to avoid conflicts with other local services.
+Open **http://localhost:3000**
 
 ### Demo Mode (no keys required)
 
@@ -223,9 +229,12 @@ Add real keys to `.env.local` to unlock full real-time functionality.
 |----------|:--------:|---------|
 | `OPENROUTER_API_KEY` | for text AI | Powers all streaming text generation |
 | `POLLINATIONS_API_KEY` | for images | Server-side image generation (token stays server-only) |
+| `REPLICATE_API_TOKEN` | for video | Server-side video generation via Replicate (minimax/video-01) |
 | `NEXT_PUBLIC_SUPABASE_URL` | for auth | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for auth | Supabase publishable/anon key |
 | `NEXT_PUBLIC_SITE_URL` | optional | Public URL sent as the OpenRouter `HTTP-Referer` |
+
+> Get a free `REPLICATE_API_TOKEN` at **https://replicate.com/account/api-tokens** — no credit card needed for starter credits.
 
 > `.env.local` is **gitignored** — secrets are never committed.
 
@@ -275,6 +284,20 @@ Generates an image, returning an inline data URL.
 
 **Generation order:** Pollinations AI → OpenRouter image model → deterministic placeholder.
 
+### `POST /api/video`
+
+Generates a short MP4 video clip via Replicate. Creates a prediction, polls until complete (~2–3 min), then returns the Replicate CDN URL which the browser `<video>` element streams directly.
+
+```jsonc
+// Request
+{ "prompt": "Drone shot flying over a misty mountain range at sunrise" }
+
+// Response
+{ "video": "https://replicate.delivery/.../output.mp4" }
+```
+
+Returns **503** with a descriptive error message if `REPLICATE_API_TOKEN` is not configured or the prediction fails.
+
 ---
 
 ## Tool Categories
@@ -282,7 +305,7 @@ Generates an image, returning an inline data URL.
 | Category | Interface | Example Models | Sample Prompt |
 |----------|-----------|----------------|---------------|
 | 🖼️ **Image Generation** | Prompt → inline image | Pollinations (Flux), Gemini Image | *"Minimalist logo for a coffee brand"* |
-| 🎬 **Video Generation** | Prompt → inline clip | Runway, Kling, Pika | *"Drone shot over misty mountains"* |
+| 🎬 **Video Generation** | Prompt → inline `<video>` | Replicate (minimax/video-01) | *"Drone shot over misty mountains"* |
 | 💻 **Code Generation** | Editor + runner | Qwen3 Coder, GPT-OSS 120B | *"A React hook for debounced search"* |
 | 📝 **Notes / Documents** | Rich text editor | GPT-OSS 120B, Nemotron, Llama 3.3 | *"Draft a product launch email"* |
 | 🤖 **Agentic / Autonomous** | Pipeline builder | GPT-OSS 120B, Hermes 3 405B | *"5-step SaaS launch checklist"* |
@@ -315,7 +338,7 @@ Each category opens an embedded workspace with a model picker, prompt composer a
 ## Roadmap
 
 - [ ] Standalone Express / Python microservices for heavy workloads
-- [ ] Real video generation provider integration
+- [x] Real video generation — **Replicate (minimax/video-01), native `<video>` player, Vercel env wired**
 - [ ] Team workspaces + shared session libraries
 - [ ] Usage analytics dashboard
 - [ ] `pro` plan billing + quota enforcement
