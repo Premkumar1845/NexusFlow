@@ -57,25 +57,47 @@ export async function generatePollinationsImage(
     }
 }
 
-/* ── Video generation ──────────────────────────────────────────────── */
+/* ── Video generation via Hugging Face Inference API ──────────────── */
 
-const POLLINATIONS_VIDEO_BASE = "https://video.pollinations.ai/prompt";
+const HF_VIDEO_MODEL =
+    "https://api-inference.huggingface.co/models/damo-vilab/text-to-video-ms-1.7b";
+
+export function hasHuggingFaceKey() {
+    return Boolean(process.env.HUGGINGFACE_API_KEY);
+}
 
 /**
- * Generates a short video clip for `prompt` using Pollinations' free video
- * API and returns the public MP4 URL, or null if the request fails.
+ * Generates a short video clip for `prompt` using the free Hugging Face
+ * Inference API and returns a base64 data URL, or null on failure.
+ * Requires HUGGINGFACE_API_KEY in the environment.
  */
-export async function generatePollinationsVideo(
+export async function generateHuggingFaceVideo(
     prompt: string
 ): Promise<string | null> {
-    const url = `${POLLINATIONS_VIDEO_BASE}/${encodeURIComponent(prompt)}`;
+    const key = process.env.HUGGINGFACE_API_KEY;
+    if (!key) return null;
+
     try {
-        // HEAD first to verify the URL resolves before handing it to the client.
-        const res = await fetch(url, { method: "HEAD" });
+        const res = await fetch(HF_VIDEO_MODEL, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${key}`,
+                "Content-Type": "application/json",
+                "x-wait-for-model": "true",
+            },
+            body: JSON.stringify({ inputs: prompt }),
+            signal: AbortSignal.timeout(120_000),
+        });
+
         if (!res.ok) return null;
+
         const ct = res.headers.get("content-type") ?? "";
         if (!ct.startsWith("video/") && !ct.startsWith("application/octet")) return null;
-        return url;
+
+        const buf = Buffer.from(await res.arrayBuffer());
+        if (buf.byteLength === 0) return null;
+
+        return `data:video/mp4;base64,${buf.toString("base64")}`;
     } catch {
         return null;
     }
