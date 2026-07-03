@@ -30,12 +30,8 @@ export default function DiscoverView({
                     <NexusMark className="w-14 h-14" />
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-semibold text-white">
-                    Access next-gen AI tools under 1 platform
+                    Access AI tools under one Roof
                 </h1>
-                <p className="mt-2 text-sm text-white/50 max-w-md">
-                    Search to launch a tool, or pick a category below. Everything runs
-                    here — no redirects.
-                </p>
 
                 {/* Central search engine bar */}
                 <form onSubmit={submit} className="mt-5 w-full max-w-xl">
@@ -56,14 +52,6 @@ export default function DiscoverView({
                         </button>
                     </div>
                 </form>
-            </div>
-
-            {/* Stats grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/5 rounded-xl bg-white/[0.03] ring-1 ring-white/5 mb-6">
-                <Stat label="TOOLS LIVE" value="120+" sub="Across all categories" />
-                <Stat label="CATEGORIES" value="6" sub="Image · Video · Code · Docs…" />
-                <Stat label="AI MODELS" value="30+" sub="Via OpenRouter API" />
-                <Stat label="TASKS DONE" value="1.2M" sub="Platform-wide sessions" />
             </div>
 
             {/* Category cards */}
@@ -94,6 +82,14 @@ export default function DiscoverView({
                         </button>
                     );
                 })}
+            </div>
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/5 rounded-xl bg-white/[0.03] ring-1 ring-white/5 mt-6">
+                <Stat label="TOOLS LIVE" value="120+" sub="Across all categories" />
+                <Stat label="CATEGORIES" value="6" sub="Image · Video · Code · Docs…" />
+                <Stat label="AI MODELS" value="30+" sub="Via OpenRouter API" />
+                <Stat label="TASKS DONE" value="1.2M" sub="Platform-wide sessions" />
             </div>
         </div>
     );

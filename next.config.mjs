@@ -8,6 +8,9 @@ const nextConfig = {
     reactStrictMode: true,
     // Pin the workspace root so Next doesn't pick up an unrelated parent lockfile.
     outputFileTracingRoot: __dirname,
+    turbopack: {
+        root: __dirname,
+    },
     images: {
         remotePatterns: [
             { protocol: "https", hostname: "**" },
