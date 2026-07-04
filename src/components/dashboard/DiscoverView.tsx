@@ -30,7 +30,7 @@ export default function DiscoverView({
                     <NexusMark className="w-14 h-14" />
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-semibold text-white">
-                    Access AI tools under one Roof
+                    Access AI Tools under one Roof
                 </h1>
 
                 {/* Central search engine bar */}
