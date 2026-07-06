@@ -77,17 +77,17 @@ The platform is **demo-friendly by design**: it runs fully without any keys (loc
 
 | # | Feature | Description |
 |---|---------|-------------|
-| 🎯 | **Unified Search Router** | A keyword-scoring router maps free-text queries to the best-matching of 6 categories — from both the hero search bar and the dashboard. |
-| 🖼️ | **Real Image Generation** | Server-side **Pollinations AI** generation (with OpenRouter image fallback). Token stays server-only; images returned as inline data URLs. |
-| 🎬 | **Real Video Generation** | Server-side **Replicate API** (minimax/video-01) generates genuine MP4 clips from text prompts. Result plays inline in a native `<video>` element — no fake play-button overlays. |
-| 💬 | **Streaming Text AI** | Server-Sent Events (SSE) proxy over **OpenRouter** streams tokens live for code, docs, agentic and builder tools. |
-| 🧩 | **6 Embedded Tool Workspaces** | Image, Video, Code, Notes/Docs, Agentic, App/Website Builder — each with a model picker, prompt composer and inline output. |
-| 🔐 | **Supabase Auth + RLS** | Email auth, profile auto-provisioning on signup, and Row-Level-Security so users only ever see their own data. |
-| 💾 | **Session Persistence** | Every run is saved — to Supabase when authenticated, gracefully to `localStorage` in demo mode. |
-| 🌌 | **Interactive 3D Hero** | A Canvas2D particle-network background with perspective projection, auto-rotation, pointer parallax and `prefers-reduced-motion` support. |
-| 📱 | **Fully Responsive** | Flexbox/clamp-driven layouts that fit cleanly from mobile to ultrawide. |
-| 🧪 | **Zero-Config Demo Mode** | Runs with no keys at all — perfect for evaluation and onboarding. |
-| 🛡️ | **Keys Never Leave the Server** | All provider keys live in Route Handlers; the browser never sees them. |
+ **Unified Search Router** | A keyword-scoring router maps free-text queries to the best-matching of 6 categories — from both the hero search bar and the dashboard. |
+ **Real Image Generation** | Server-side **Pollinations AI** generation (with OpenRouter image fallback). Token stays server-only; images returned as inline data URLs. |
+ **Real Video Generation** | Server-side **Replicate API** (minimax/video-01) generates genuine MP4 clips from text prompts. Result plays inline in a native `<video>` element — no fake play-button overlays. |
+ **Streaming Text AI** | Server-Sent Events (SSE) proxy over **OpenRouter** streams tokens live for code, docs, agentic and builder tools. |
+ **6 Embedded Tool Workspaces** | Image, Video, Code, Notes/Docs, Agentic, App/Website Builder — each with a model picker, prompt composer and inline output. |
+ **Supabase Auth + RLS** | Email auth, profile auto-provisioning on signup, and Row-Level-Security so users only ever see their own data. |
+ **Session Persistence** | Every run is saved — to Supabase when authenticated, gracefully to `localStorage` in demo mode. |
+ **Interactive 3D Hero** | A Canvas2D particle-network background with perspective projection, auto-rotation, pointer parallax and `prefers-reduced-motion` support. |
+ **Fully Responsive** | Flexbox/clamp-driven layouts that fit cleanly from mobile to ultrawide. |
+ **Zero-Config Demo Mode** | Runs with no keys at all — perfect for evaluation and onboarding. |
+ **Keys Never Leave the Server** | All provider keys live in Route Handlers; the browser never sees them. |
 
 ---
 
