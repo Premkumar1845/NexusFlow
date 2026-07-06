@@ -24,19 +24,6 @@ No tab-hopping. No external redirects. Every model call stays server-side and on
 </div>
 
 ---
-## Application Walkthrough
-
-| Landing Page | Login Page |
-|:---:|:---:|
-| ![Landing Page](screenshots/landing-page.png) | ![Login Page](screenshots/login-page.png) |
-
-| Dashboard | Code Generation |
-|:---:|:---:|
-| ![Dashboard](screenshots/dashboard-home.png) | ![Code Generation](screenshots/code-generation.png) |
-
-| Notes / Documents | Image Generation |
-|:---:|:---:|
-| ![Notes Documents](screenshots/notes-documents.png) | ![Image Generation](screenshots/image-generation.png) |
 
 ## Overview
 
