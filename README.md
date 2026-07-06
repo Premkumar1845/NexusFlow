@@ -49,7 +49,7 @@ No tab-hopping. No external redirects. Every model call stays server-side and on
     </td>
     <td align="center" width="33%">
       <strong> Notes/Document Generation </strong><br/><br/>
-      <img src="notes-document.png" width="100%"/>
+      <img src="notes-documents.png" width="100%"/>
     </td>
     <td align="center" width="33%">
       <strong> Image Generation </strong><br/><br/>
