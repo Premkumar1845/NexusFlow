@@ -75,7 +75,7 @@ The platform is **demo-friendly by design**: it runs fully without any keys (loc
 
 ## Key Features
 
-|  | Feature | 
+|  | Features | 
 |---|---------|
  **Unified Search Router** | A keyword-scoring router maps free-text queries to the best-matching of 6 categories — from both the hero search bar and the dashboard. |
  **Real Image Generation** | Server-side **Pollinations AI** generation (with OpenRouter image fallback). Token stays server-only; images returned as inline data URLs. |
