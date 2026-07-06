@@ -24,6 +24,40 @@ No tab-hopping. No external redirects. Every model call stays server-side and on
 </div>
 
 ---
+##  Application Walkthrough
+
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <strong> Landing Page </strong><br/><br/>
+      <img src="landing-page.png" width="100%"/>
+    </td>
+    <td align="center" width="33%">
+      <strong> Login Page </strong><br/><br/>
+      <img src="login-page.png" width="100%"/>
+    </td>
+    <td align="center" width="33%">
+      <strong> Dashboard </strong><br/><br/>
+      <img src="dashboard-home.png" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <strong> Code Generation </strong><br/><br/>
+      <img src="code-generation.png" width="100%"/>
+    </td>
+    <td align="center" width="33%">
+      <strong> Notes/Document Generation </strong><br/><br/>
+      <img src="notes-document.png" width="100%"/>
+    </td>
+    <td align="center" width="33%">
+      <strong> Image Generation </strong><br/><br/>
+      <img src="image-generation.png" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+</table>
 
 ## Overview
 
