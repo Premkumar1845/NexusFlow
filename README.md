@@ -75,8 +75,8 @@ The platform is **demo-friendly by design**: it runs fully without any keys (loc
 
 ## Key Features
 
-|  | Feature | Description |
-|---|---------|-------------|
+|  | Feature | 
+|---|---------|
  **Unified Search Router** | A keyword-scoring router maps free-text queries to the best-matching of 6 categories — from both the hero search bar and the dashboard. |
  **Real Image Generation** | Server-side **Pollinations AI** generation (with OpenRouter image fallback). Token stays server-only; images returned as inline data URLs. |
  **Real Video Generation** | Server-side **Replicate API** (minimax/video-01) generates genuine MP4 clips from text prompts. Result plays inline in a native `<video>` element — no fake play-button overlays. |
